@@ -145,6 +145,12 @@ function Header(props) {
                         </ListItemIcon>
                         <ListItemText primary="Home" />
                     </ListItem>
+                    <ListItem button component="a" href="/product/list">
+                        <ListItemIcon>
+                            <ShoppingCartIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Product List" />
+                    </ListItem>
                     <ListItem button component="a" href="/contact">
                         <ListItemIcon>
                             <ShoppingCartIcon />
