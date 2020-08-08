@@ -13,6 +13,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { Box } from '@material-ui/core';
 import ErrorPage from 'components/ErrorPage'
 import LoadingPage from 'components/LoadingPage'
+import EditIcon from '@material-ui/icons/Edit';
+import Tooltip from '@material-ui/core/Tooltip';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -29,17 +32,30 @@ function ProductListPage(props) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
  
+    const errorHandler = err => {
+        console.log('errorHandler: ', err)
+        setError(err)
+        setIsLoading(false)
+    }
+
+    const statusRequest = res => {
+        console.log('status:', res)
+        if (!res.ok) {
+            throw new Error(res.statusText);
+        }
+        return res;
+    }
+
     const fetchData = async _ => {
-        console.log('fetchData')
         fetch('http://localhost:3000/dev/product')
+            .then(statusRequest)
             .then(res => res.json())
             .then(res => {
                 setProductList(res)
                 setIsLoading(false)
             })
             .catch(err => {
-                setError(err)
-                setIsLoading(false)
+                errorHandler(err)
             });
     }
     
@@ -47,13 +63,25 @@ function ProductListPage(props) {
         fetchData();
     }, []);
 
+    const deleteItem = (id, bt) => {
+        console.log('delete: ', id, bt)
+        fetch(`http://localhost:3000/dev/product/${id}`, { method: 'DELETE' })
+            .then(statusRequest)
+            .then(res => {
+                setProductList(productList.filter(product => product.id != id))
+                setIsLoading(false)
+            })
+            .catch(err => {
+                errorHandler(err)
+            });
+    }
+
     if ( error )
-        return <ErrorPage error={error}/>
+        return <ErrorPage error={String(error)}/>
 
     if ( isLoading )
         return <LoadingPage />
 
-    console.log('productList', productList)
     return (
         <Header>
             <List dense className={classes.root}>
@@ -73,9 +101,16 @@ function ProductListPage(props) {
                             </ListItemIcon>
                             <ListItemText id={labelId} primary={product.name} />
                             <ListItemSecondaryAction>
-                                <IconButton edge="end" aria-label="comments">
-                                    <DeleteIcon />
-                                </IconButton>
+                                <Tooltip title="Edit" aria-label="edit">
+                                    <IconButton edge="end">
+                                        <EditIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete" aria-label="delete">
+                                    <IconButton edge="end" onClick={() => { deleteItem(product.id, this) }}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </ListItemSecondaryAction>
                         </ListItem>
                     );
